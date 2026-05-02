@@ -12,11 +12,27 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import axios from 'axios'; // Ensure axios is installed
 import { BusinessProfile, ErrorWasteLog, StaffMri } from '@/types/buisness';
+interface IndustryMetrics {
+    totalLoss: number;
+    averageFatigue?: number;
+}
 
-export default function App({ business, industryMetrics }: { business: BusinessProfile; industryMetrics: any }) {
+interface DynamicInsight {
+    id: number;
+    title: string;
+    suggestion: string;
+    context: string;
+    isRejected: boolean;
+    reason: string;
+    proof: string;
+    type: string;
+}
+export default function App({ business, industryMetrics }: { business: BusinessProfile; industryMetrics: IndustryMetrics }) {
     const [verifying, setVerifying] = useState(false);
-    const [dynamicInsights, setDynamicInsights] = useState<any[]>([]);
-    console.log(business)
+    
+    // Replace <any[]> with <DynamicInsight[]>
+    const [dynamicInsights, setDynamicInsights] = useState<DynamicInsight[]>([]);
+        console.log(business)
     // Industry Icon Resolver
     const stats = useMemo(() => {
         const staff = business.staff || [];

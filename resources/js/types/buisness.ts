@@ -50,7 +50,7 @@ export interface Ingredient {
 export interface Recipe {
     id: number;
     product_name: string;
-    attributes: Record<string, any>; // JSON column
+    attributes: Record<string, unknown>; // JSON column
     sale_price: number;
     created_at: string;
     updated_at: string;
@@ -93,7 +93,7 @@ export interface Product {
     business_id: number;
     name: string;
     category: string;
-    attributes: Record<string, any>; // JSON column
+    attributes: Record<string, unknown>; // JSON column
     customer_rating: number;
     created_at: string;
     updated_at: string;
