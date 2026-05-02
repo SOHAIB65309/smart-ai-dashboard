@@ -1,16 +1,31 @@
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarGroup, SidebarGroupLabel, SidebarMenuAction } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarGroup, SidebarGroupLabel } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Plus, Building2 } from 'lucide-react';
+import { LayoutGrid, Plus, Building2 } from 'lucide-react';
 import AppLogo from './app-logo';
 
+// 👇 1. Define the exact shape of your Inertia Props
+interface SharedPageProps {
+    auth: {
+        user: unknown;
+        // We only need the id and name for the sidebar, so we can define it inline here
+        businessProfiles?: {
+            id: number;
+            business_name: string;
+        }[];
+    };
+    [key: string]: unknown; // Allows other standard Inertia props to exist
+}
+// 👆 =========================================
+
 export function AppSidebar() {
-    // Access the shared business data from your Inertia middleware
-    const { auth } = usePage().props as any;
-    console.log(auth)
+    // 👇 2. Pass the interface into usePage() and REMOVE 'as any'
+    const { auth } = usePage<SharedPageProps>().props;
+    
+    console.log(auth);
     const businesses = auth.businessProfiles || [];
 
     const mainNavItems: NavItem[] = [
@@ -42,7 +57,9 @@ export function AppSidebar() {
                 <SidebarGroup>
                     <SidebarGroupLabel>Your Businesses</SidebarGroupLabel>
                     <SidebarMenu>
-                        {businesses.map((business: any) => (
+                        {/* 👇 3. REMOVE the ': any' from business. 
+                                TypeScript now auto-infers this because of our interface! */}
+                        {businesses.map((business) => (
                             <SidebarMenuItem key={business.id}>
                                 <SidebarMenuButton asChild>
                                     <Link href={`/business/${business.id}/dashboard`}>

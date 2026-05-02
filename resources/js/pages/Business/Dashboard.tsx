@@ -11,16 +11,16 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import axios from 'axios'; // Ensure axios is installed
+import { BusinessProfile, ErrorWasteLog, StaffMri } from '@/types/buisness';
 
-export default function App({ business, industryMetrics }: any) {
+export default function App({ business, industryMetrics }: { business: BusinessProfile; industryMetrics: any }) {
     const [verifying, setVerifying] = useState(false);
     const [dynamicInsights, setDynamicInsights] = useState<any[]>([]);
-    const [activeTab, setActiveTab] = useState('anomalies');
     console.log(business)
     // Industry Icon Resolver
     const stats = useMemo(() => {
         const staff = business.staff || [];
-        const logs = staff.flatMap((s: any) => s.waste_logs || []);
+        const logs = staff.flatMap((s: StaffMri) => s.waste_logs || []);
         return {
             totalWasteCount: logs.length,
             industryIcon: business.industry_type === 'Restaurant' ? Utensils :
@@ -198,8 +198,8 @@ export default function App({ business, industryMetrics }: any) {
                                 <TabsPrimitive.Trigger value="staff" className="flex-1 text-[11px] font-black py-2.5 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-indigo-600 text-slate-500">STAFF</TabsPrimitive.Trigger>
                             </TabsPrimitive.List>
                             <TabsPrimitive.Content value="anomalies" className="space-y-4 outline-none">
-                                {business.staff?.flatMap((member: any) => (
-                                    member.waste_logs?.map((log: any, idx: number) => (
+                                {business.staff?.flatMap((member: StaffMri) => (
+                                    member.waste_logs?.map((log: ErrorWasteLog, idx: number) => (
                                         <div key={idx} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                                             <div className="flex justify-between items-start mb-2">
                                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">#{log.id} Trace</span>

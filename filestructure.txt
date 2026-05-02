@@ -179,6 +179,7 @@
             |-- welcome.tsx
         |-- ssr.jsx
         |-- types
+            |-- buisness.ts
             |-- index.ts
             |-- vite-env.d.ts
     |-- views
