@@ -69,7 +69,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('ingredient_id')->nullable()->constrained();
             $table->foreignId('staff_id')->constrained('staff_mris');
-            $table->enum('error_type', ['Expired', 'Overcooked', 'Size Mismatch', 'Defective']);
+            $table->enum('error_type', ['Expired', 'Overcooked', 'Size Mismatch', 'Defective', 'Prep Error']);
             $table->decimal('waste_qty', 10, 2)->default(0);
             $table->decimal('financial_loss', 10, 2);
             $table->text('system_reasoning'); // Logic Gate Input[cite: 3]

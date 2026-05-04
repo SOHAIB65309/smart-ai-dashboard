@@ -9,7 +9,9 @@ class ErrorWasteLog extends Model
 {
     protected $fillable = [
         'ingredient_id', 
-        'staff_id', 
+        'product_id',
+        'staff_id',
+        'product_id',
         'error_type', 
         'financial_loss', 
         'waste_qty', 

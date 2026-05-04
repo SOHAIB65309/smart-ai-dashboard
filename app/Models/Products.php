@@ -33,4 +33,5 @@ class Products extends Model
     {
         return $this->hasMany(RecipeRequirement::class);
     }
+    public function wasteLogs(){return $this->hasMany(ErrorWasteLog::class,'product_id');}
 }

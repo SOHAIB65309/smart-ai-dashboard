@@ -32,6 +32,12 @@ return new class extends Migration
         $table->text('customer_feedback')->nullable(); // Reasoning for fluctuations
         $table->timestamps();
     });
+
+    // 6. Error Waste Logs Table
+    Schema::table('error_waste_logs', function (Blueprint $table) {
+    // Making it nullable so Restaurant logs (which use ingredient_id) don't break
+    $table->foreignId('product_id')->nullable()->constrained()->onDelete('cascade');
+});
     }
 
     /**
@@ -41,5 +47,6 @@ return new class extends Migration
     {
         Schema::dropIfExists('products');
         Schema::dropIfExists('orders');
+        Schema::dropIfExists('error_waste_logs');
     }
 };

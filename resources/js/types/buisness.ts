@@ -1,8 +1,27 @@
-
+// Enums matching Laravel Migration Schema
 export type IndustryType = 'Restaurant' | 'E-commerce' | 'Staffing';
-export type ErrorType = 'Expired' | 'Overcooked' | 'Size Mismatch' | 'Defective';
+export type ErrorType = 'Expired' | 'Overcooked' | 'Size Mismatch' | 'Defective' | 'Prep Error';
 export type OrderStatus = 'Completed' | 'Returned' | 'Cancelled';
 
+// Dashboard Specific Types
+export interface DynamicInsight {
+    id: number;
+    title: string;
+    suggestion: string;
+    context: string;
+    isRejected: boolean;
+    reason: string;
+    proof: string;
+    type: string;
+}
+
+export interface IndustryMetrics {
+    totalLoss: number;
+    averageFatigue: number;
+    anomalyCount: number;
+}
+
+// Core Business Models
 export interface BusinessProfile {
     id: number;
     user_id: number;
@@ -11,7 +30,7 @@ export interface BusinessProfile {
     created_at: string;
     updated_at: string;
     
-    // Relationships
+    // Relationships (Loaded via Controller)
     staff?: StaffMri[];
     ingredients?: Ingredient[];
     products?: Product[];
@@ -23,12 +42,12 @@ export interface StaffMri {
     business_id: number;
     name: string;
     role: string;
-    base_quality_rating: number; // Decimal comes through as number in TS
+    base_quality_rating: number; 
     created_at: string;
     updated_at: string;
 
     // Relationships
-    daily_performance_logs?: DailyPerformanceLog[];
+    performance_logs?: DailyPerformanceLog[];
     waste_logs?: ErrorWasteLog[];
     orders?: Order[];
 }
@@ -47,25 +66,34 @@ export interface Ingredient {
     waste_logs?: ErrorWasteLog[];
 }
 
-export interface Recipe {
+export interface Product {
     id: number;
-    product_name: string;
-    attributes: Record<string, unknown>; // JSON column
-    sale_price: number;
+    business_id: number;
+    name: string;
+    category: string;
+    attributes: Record<string, any>; // JSON column
+    customer_rating: number;
     created_at: string;
     updated_at: string;
 
     // Relationships
-    details?: RecipeDetail[];
+    orders?: Order[];
+    waste_logs?: ErrorWasteLog[]; // Trace product-specific defects/returns
 }
 
-export interface RecipeDetail {
+export interface Order {
     id: number;
-    recipe_id: number;
-    ingredient_id: number;
-    required_qty: number;
+    business_id: number;
+    product_id: number;
+    staff_id: number;
+    status: OrderStatus;
+    total_price: number;
+    customer_feedback: string | null;
+    created_at: string;
+    updated_at: string;
 }
 
+// Log and Detail Models
 export interface DailyPerformanceLog {
     id: number;
     staff_id: number;
@@ -78,8 +106,11 @@ export interface DailyPerformanceLog {
 
 export interface ErrorWasteLog {
     id: number;
-    ingredient_id: number | null; // Nullable
     staff_id: number;
+    // Polymorphic keys based on Industry
+    ingredient_id: number | null; 
+    product_id: number | null; 
+    
     error_type: ErrorType;
     waste_qty: number;
     financial_loss: number;
@@ -88,28 +119,20 @@ export interface ErrorWasteLog {
     updated_at: string;
 }
 
-export interface Product {
+// Support Structures
+export interface Recipe {
     id: number;
-    business_id: number;
-    name: string;
-    category: string;
-    attributes: Record<string, unknown>; // JSON column
-    customer_rating: number;
+    product_name: string;
+    attributes: Record<string, any>;
+    sale_price: number;
     created_at: string;
     updated_at: string;
-
-    // Relationships
-    orders?: Order[];
+    details?: RecipeDetail[];
 }
 
-export interface Order {
+export interface RecipeDetail {
     id: number;
-    business_id: number;
-    product_id: number;
-    staff_id: number;
-    status: OrderStatus;
-    total_price: number;
-    customer_feedback: string | null; // Nullable
-    created_at: string;
-    updated_at: string;
+    recipe_id: number;
+    ingredient_id: number;
+    required_qty: number;
 }
