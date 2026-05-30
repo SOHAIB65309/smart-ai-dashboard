@@ -15,6 +15,8 @@ use Inertia\Inertia;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
+use App\Http\Requests\BusinessSeedRequest;
+
 class BusinessController extends Controller
 {
     // GET: /business/create
@@ -24,29 +26,133 @@ class BusinessController extends Controller
     }
 
     // POST: /business
-    public function store(Request $request)
+    public function store(BusinessSeedRequest $request)
     {
-        $validated = $request->validate([
-            'business_name' => 'required|string|max:255',
-            'industry_type' => 'required|in:Restaurant,E-commerce,Staffing',
-            'seed_data' => 'boolean',
-            'record_count' => 'nullable|integer|min:10|max:1000',
-        ]);
+        $validated = $request->validated();
 
-        DB::transaction(function () use ($request, $validated) {
+        $business = \Illuminate\Support\Facades\DB::transaction(function () use ($request, $validated) {
             // 1. Create the Business Profile
             $business = $request->user()->businessProfiles()->create([
                 'business_name' => $validated['business_name'],
                 'industry_type' => $validated['industry_type'],
             ]);
 
-            // 2. Check if the user wants to seed random data
-            if ($request->seed_data) {
-                $this->seedBusinessData($business, $validated['record_count'] ?? 100);
+            // 2. Advanced Seeding
+            if ($validated['seed_data']) {
+                $this->advancedSeed($business, $validated['seeding_params']);
             }
+            
+            return $business;
         });
 
-        return redirect()->route('dashboard')->with('message', 'Business created and seeded!');
+        return redirect()->route('business.dashboard', $business->id)->with('message', 'Business created and seeded with precision!');
+    }
+
+    private function advancedSeed($business, $params)
+    {
+        $staffCount = $params['staff_count'] ?? 3;
+        $perfRange = $params['performance_range'] ?? [70, 95];
+        $fatigueRange = $params['fatigue_range'] ?? [0, 4];
+        $intensity = ($params['waste_intensity'] ?? 50) / 100;
+
+        $roles = [
+            'Restaurant' => ['Head Chef', 'Sous Chef', 'Line Cook', 'Server'],
+            'E-commerce' => ['Inventory Manager', 'Quality Lead', 'Fulfillment', 'Shipper'],
+            'Staffing' => ['Shift Supervisor', 'Safety Officer', 'Area Lead', 'Coordinator']
+        ];
+
+        $staffMembers = [];
+        $currentRoles = $roles[$business->industry_type] ?? ['Manager'];
+
+        for ($i = 0; $i < $staffCount; $i++) {
+            $staffMembers[] = StaffMri::create([
+                'business_id' => $business->id,
+                'name' => fake()->name(),
+                'role' => $currentRoles[$i % count($currentRoles)],
+                'base_quality_rating' => rand($perfRange[0], $perfRange[1]) / 20 // Scale to 0-5
+            ]);
+        }
+
+        foreach ($staffMembers as $staff) {
+            for ($d = 0; $d < 7; $d++) {
+                $started = rand(50, 100);
+                // Failure rate inversely proportional to performance rating, scaled by intensity
+                $failRate = (1 - ($staff->base_quality_rating / 5)) * $intensity * 0.2; 
+                
+                DailyPerformanceLog::create([
+                    'staff_id' => $staff->id,
+                    'tasks_started' => $started,
+                    'tasks_failed' => rand(0, (int)($started * $failRate)),
+                    'overtime_hours' => rand($fatigueRange[0] * 10, $fatigueRange[1] * 10) / 10,
+                    'created_at' => now()->subDays($d)
+                ]);
+            }
+        }
+
+        // Seeding Industry Specific Items
+        if ($business->industry_type === 'Restaurant') {
+            $items = ['Premium Beef', 'Organic Salmon', 'Dairy Cream', 'Truffle Oil'];
+            foreach (array_slice($items, 0, rand(2, 4)) as $name) {
+                $ingredient = Ingredient::create([
+                    'business_id' => $business->id,
+                    'name' => $name,
+                    'unit_cost' => rand(500, 2000),
+                    'unit_type' => 'kg',
+                    'min_stock_threshold' => rand(5, 20)
+                ]);
+
+                $incidentCount = (int)(10 * $intensity);
+                for ($k = 0; $k < $incidentCount; $k++) {
+                    ErrorWasteLog::create([
+                        'ingredient_id' => $ingredient->id,
+                        'staff_id' => $staffMembers[array_rand($staffMembers)]->id,
+                        'error_type' => fake()->randomElement(['Overcooked', 'Expired', 'Prep Error']),
+                        'waste_qty' => rand(1, 5),
+                        'financial_loss' => rand(400, 1500),
+                        'system_reasoning' => 'Variation seeding: fatigue correlation detected.'
+                    ]);
+                }
+            }
+        }
+
+        if ($business->industry_type === 'E-commerce') {
+            $items = ['Winter Parka', 'Leather Boots', 'Tech Backpack', 'Smart Watch'];
+            foreach (array_slice($items, 0, rand(2, 4)) as $name) {
+                $product = Products::create([
+                    'business_id' => $business->id,
+                    'name' => $name,
+                    'category' => 'Retail',
+                    'attributes' => ['material' => 'Synthetic', 'verified' => true],
+                    'customer_rating' => rand(30, 50) / 10
+                ]);
+
+                $incidentCount = (int)(8 * $intensity);
+                for ($k = 0; $k < $incidentCount; $k++) {
+                    $isReturn = (rand(1, 100) <= (30 * $intensity));
+                    $salePrice = rand(2000, 8000);
+
+                    $order = Order::create([
+                        'business_id' => $business->id,
+                        'product_id' => $product->id,
+                        'staff_id' => $staffMembers[array_rand($staffMembers)]->id,
+                        'status' => $isReturn ? 'Returned' : 'Completed',
+                        'total_price' => $salePrice,
+                        'customer_feedback' => $isReturn ? 'Defective' : 'Satisfactory'
+                    ]);
+
+                    if ($isReturn) {
+                        ErrorWasteLog::create([
+                            'product_id' => $product->id,
+                            'staff_id' => $order->staff_id,
+                            'error_type' => 'Defective',
+                            'waste_qty' => 1,
+                            'financial_loss' => $salePrice * 0.6,
+                            'system_reasoning' => 'Return rate fluctuation in seeding.'
+                        ]);
+                    }
+                }
+            }
+        }
     }
 
     // private function seedBusinessData($business, $count)
@@ -278,6 +384,11 @@ class BusinessController extends Controller
             'business_info' => [
                 'name' => $business->business_name,
                 'type' => $business->industry_type
+            ],
+            'modifiers' => [
+                'anomaly_delta' => (float) $request->input('modifiers.anomaly_delta', 0),
+                'fatigue_delta' => (float) $request->input('modifiers.fatigue_delta', 0),
+                'loss_mitigation' => (float) $request->input('modifiers.loss_mitigation', 0),
             ],
             'metrics' => [
                 'averageFatigue' => (float) ($business->staff->flatMap->performanceLogs->avg('overtime_hours') ?? 0),

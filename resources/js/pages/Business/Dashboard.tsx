@@ -7,19 +7,28 @@ import {
     PieChart as PieChartIcon, TrendingUp, Package, Briefcase
 } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import axios from 'axios';
 import { BusinessProfile, DynamicInsight, IndustryMetrics } from '@/types/buisness';
+import BusinessAnalyzerPanel from '@/components/business-analyzer-panel';
+import { Button } from '@/components/ui/button';
 
 const COLORS = ['#6366f1', '#f43f5e', '#f59e0b', '#10b981', '#8b5cf6'];
 
 export default function App({ business, industryMetrics }: { business: BusinessProfile; industryMetrics: IndustryMetrics }) {
     const [verifying, setVerifying] = useState(false);
     const [dynamicInsights, setDynamicInsights] = useState<DynamicInsight[]>([]);
+    
+    // Requirement 1: State parameters for real-time simulation scaling
+    const [modifiers, setModifiers] = useState({
+        anomaly_delta: 0,
+        fatigue_delta: 0,
+        loss_mitigation: 0
+    });
 
     const industryConfig = useMemo(() => {
         const types = {
@@ -42,7 +51,7 @@ export default function App({ business, industryMetrics }: { business: BusinessP
                 itemLabel: 'Staff MRI',
                 chartTitle: 'Task Failure by Staff',
                 itemIcon: UserCheck,
-                barDataKey: 'failures' // Use failures instead of loss
+                barDataKey: 'failures'
             }
         };
         return types[business.industry_type] || types['Restaurant'];
@@ -60,64 +69,69 @@ export default function App({ business, industryMetrics }: { business: BusinessP
         const staff = activeBusiness.staff || [];
         const isStaffing = activeBusiness.industry_type === 'Staffing';
         
-        // 1. Calculate Loss / Failures
-        const allWasteLogs = staff.flatMap(s => s.waste_logs || []);
-        const totalCalculatedLoss = allWasteLogs.reduce((sum, log) => sum + parseFloat(log.financial_loss.toString()), 0);
+        // Requirement 4: Re-calculate health score and charts in real-time based on simulation parameters
+        const anomalyFactor = 1 + (modifiers.anomaly_delta / 100);
+        const fatigueFactor = 1 + (modifiers.fatigue_delta / 100);
+        const mitigationFactor = 1 - (modifiers.loss_mitigation / 100);
 
-        // 2. Map Error Distribution (Pie Chart)
+        // 1. Calculate Scaled Loss / Failures
+        const allWasteLogs = staff.flatMap(s => s.waste_logs || []);
+        const totalCalculatedLoss = allWasteLogs.reduce((sum, log) => sum + parseFloat(log.financial_loss.toString()), 0) * anomalyFactor * mitigationFactor;
+
+        // 2. Map Error Distribution (Pie Chart) - Scaled
         const errorTypeMap: Record<string, number> = {};
         
         if (isStaffing) {
-            // For staffing, "Errors" are high overtime or failed tasks
             staff.forEach(s => {
                 const logs = s.performance_logs || [];
-                const failed = logs.reduce((sum, l) => sum + l.tasks_failed, 0);
+                const failed = logs.reduce((sum, l) => sum + l.tasks_failed, 0) * anomalyFactor;
                 if (failed > 0) errorTypeMap['Task Failures'] = (errorTypeMap['Task Failures'] || 0) + failed;
             });
         } else {
             allWasteLogs.forEach(log => {
-                errorTypeMap[log.error_type] = (errorTypeMap[log.error_type] || 0) + 1;
+                errorTypeMap[log.error_type] = (errorTypeMap[log.error_type] || 0) + anomalyFactor;
             });
         }
         
         const pieData = Object.keys(errorTypeMap).map(name => ({ name, value: errorTypeMap[name] }));
 
-        // 3. Dynamic Bar Chart Data
+        // 3. Dynamic Bar Chart Data - Scaled
         let itemData: any[] = [];
         if (isStaffing) {
-            // Map Staff names to their failed tasks
             itemData = staff.map(s => ({
                 name: s.name.split(' ')[0],
-                failures: (s.performance_logs || []).reduce((sum, l) => sum + l.tasks_failed, 0)
+                failures: (s.performance_logs || []).reduce((sum, l) => sum + l.tasks_failed, 0) * anomalyFactor
             })).filter(i => i.failures > 0);
         } else {
             const items = business.industry_type === 'Restaurant' ? activeBusiness.ingredients : activeBusiness.products;
             itemData = (items || []).map((item: any) => ({
                 name: item.name,
-                loss: (item.waste_logs || []).reduce((sum: number, l: any) => sum + parseFloat(l.financial_loss.toString()), 0)
+                loss: (item.waste_logs || []).reduce((sum: number, l: any) => sum + parseFloat(l.financial_loss.toString()), 0) * anomalyFactor * mitigationFactor
             })).filter(i => i.loss > 0);
         }
 
-        // 4. Reliability Formula
-        const avgFatigue = industryMetrics?.averageFatigue || 0;
-        const penalty = isStaffing ? (avgFatigue * 8) : (allWasteLogs.length * 2) + (avgFatigue * 5);
-        const healthScore = Math.max(15, Math.min(100, 100 - penalty));
+        // 4. Reliability Formula - Scaled
+        const avgFatigue = (industryMetrics?.averageFatigue || 0) * fatigueFactor;
+        const penalty = isStaffing ? (avgFatigue * 8) : (((allWasteLogs.length || 0) * anomalyFactor * 2) + (avgFatigue * 5)) * mitigationFactor;
+        const healthScore = Math.max(15, Math.min(100, isNaN(penalty) ? 100 : 100 - penalty));
 
         return {
             totalCalculatedLoss,
             pieData,
             itemData,
             healthScore,
-            totalLogs: allWasteLogs.length,
+            totalLogs: (allWasteLogs.length || 0) * anomalyFactor,
             fatigue: avgFatigue,
             isStaffing
         };
-    }, [activeBusiness, industryMetrics]);
+    }, [activeBusiness, industryMetrics, modifiers]);
 
-    const runVerification = async () => {
+    const runVerification = async (data?: any) => {
         setVerifying(true);
         try {
-            const response = await axios.post(`/business/${activeBusiness.id}/verify`).catch(() => ({
+            // Requirement 5: Pack exact slider states into 'modifiers' object
+            const payload = data || { modifiers };
+            const response = await axios.post(`/business/${activeBusiness.id}/verify`, payload).catch(() => ({
                 data: {
                     title: `${business.industry_type} Logic Verification`,
                     suggestion: business.industry_type === 'Staffing' 
@@ -162,10 +176,17 @@ export default function App({ business, industryMetrics }: { business: BusinessP
                     </div>
                 </div>
 
-                <button onClick={runVerification} disabled={verifying} className="flex items-center gap-3 bg-slate-900 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-xl hover:bg-slate-800 disabled:opacity-50">
-                    {verifying ? <Loader2 className="animate-spin" size={18} /> : <BrainCircuit size={18} />}
-                    {verifying ? "Solving Invariants..." : "Run Z3 Verification"}
-                </button>
+                <div className="flex items-center gap-3">
+                    <button onClick={() => runVerification()} disabled={verifying} className="flex items-center gap-3 bg-slate-900 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-xl hover:bg-slate-800 disabled:opacity-50">
+                        {verifying ? <Loader2 className="animate-spin" size={18} /> : <BrainCircuit size={18} />}
+                        {verifying ? "Solving Invariants..." : "Run Z3 Verification"}
+                    </button>
+                    <Link href={route('business.manage', business.id)}>
+                        <Button variant="outline" className="h-[54px] px-6 rounded-2xl font-black text-sm border-2 border-slate-200">
+                            Manage Data
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
@@ -173,12 +194,12 @@ export default function App({ business, industryMetrics }: { business: BusinessP
                     <CardHeader><CardDescription>{dashboardData.isStaffing ? 'Total Failures' : 'Total Loss'}</CardDescription>
                     <CardTitle className="text-2xl font-black">
                         {dashboardData.isStaffing 
-                            ? activeBusiness.staff?.reduce((a, b) => a + (b.performance_logs?.reduce((x, y) => x + y.tasks_failed, 0) || 0), 0)
-                            : `Rs. ${dashboardData.totalCalculatedLoss.toLocaleString()}`}
+                            ? Math.round(dashboardData.totalLogs)
+                            : `Rs. ${dashboardData.totalCalculatedLoss.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
                     </CardTitle></CardHeader>
                 </Card>
                 <Card className="border-l-4 border-l-amber-500">
-                    <CardHeader><CardDescription>Fatigue Index</CardDescription><CardTitle className="text-2xl font-black">{dashboardData.fatigue}h</CardTitle></CardHeader>
+                    <CardHeader><CardDescription>Fatigue Index</CardDescription><CardTitle className="text-2xl font-black">{dashboardData.fatigue.toFixed(1)}h</CardTitle></CardHeader>
                 </Card>
                 <Card className="border-l-4 border-l-indigo-500">
                     <CardHeader><CardDescription>System Reliability</CardDescription><CardTitle className="text-2xl font-black">{dashboardData.healthScore.toFixed(0)}%</CardTitle></CardHeader>
@@ -238,7 +259,10 @@ export default function App({ business, industryMetrics }: { business: BusinessP
                     </Card>
                 </div>
 
-                <div className="lg:col-span-4">
+                <div className="lg:col-span-4 space-y-8">
+                    {/* Requirement 2: Adaptive UI Rendering & Requirement 4: Instant visual updates */}
+                    <BusinessAnalyzerPanel business={activeBusiness} onVerify={runVerification} onChange={setModifiers} />
+                    
                     <Tabs defaultValue="performance">
                         <TabsList className="w-full">
                             <TabsTrigger value="performance" className="flex-1 text-[10px] font-black">PERFORMANCE</TabsTrigger>

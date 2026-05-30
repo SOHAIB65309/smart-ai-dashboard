@@ -10,12 +10,18 @@ def analyze_logic(data):
     biz_type = data.get('business_info', {}).get('type', 'Unknown')
     metrics = data.get('metrics', {})
     trace = data.get('deep_trace', {})
+    modifiers = data.get('modifiers', {})
     
     is_staffing = (biz_type == 'Staffing')
     logs = trace.get('performance_logs', []) if is_staffing else trace.get('waste_logs', [])
     
     if not logs:
         return {"status": "ERROR", "reason": f"No {biz_type} logs available."}
+
+    # Extract Simulation Modifiers
+    anomaly_factor = 1 + (modifiers.get('anomaly_delta', 0) / 100)
+    fatigue_factor = 1 + (modifiers.get('fatigue_delta', 0) / 100)
+    mitigation_factor = 1 - (modifiers.get('loss_mitigation', 0) / 100)
 
     # Batch Clustering & Z3 Math (Your existing Logic Gate)
     batch_size = max(1, len(logs) // 5)
@@ -24,14 +30,16 @@ def analyze_logic(data):
     solver = Solver()
 
     if is_staffing:
-        avg_ot = float(metrics.get('averageFatigue', 0))
-        total_failed = sum(l.get('failed', 0) for l in logs)
+        # Scale baseline metrics by simulation modifiers
+        avg_ot = float(metrics.get('averageFatigue', 0)) * fatigue_factor
+        total_failed = sum(l.get('failed', 0) for l in logs) * anomaly_factor
         total_started = sum(l.get('started', 0) for l in logs)
         failure_rate = (total_failed / total_started * 100) if total_started > 0 else 0
+        
         for b in batches:
-            b_fail = sum(item['failed'] for item in b)
+            b_fail = sum(item['failed'] for item in b) * anomaly_factor
             b_start = sum(item['started'] for item in b)
-            b_ot = sum(item['ot'] for item in b) / len(b) if b else 0
+            b_ot = (sum(item['ot'] for item in b) / max(1, len(b))) * fatigue_factor if b else 0
             if b_ot > 12.0 and (b_fail / b_start > 0.20 if b_start else False):
                 critical_clusters += 1
 
@@ -45,17 +53,17 @@ def analyze_logic(data):
         is_safe = (solver.check() == sat)
         solver.pop()
 
-        proof_str = f"Safety(OT={avg_ot}h, Fail={failure_rate:.1f}%) ⊢ {'SAT' if is_safe else 'UNSAT'}"
-        context_str = f"Deep MRI Analysis: {len(logs)} logs clustered into {len(batches)} batches. Failure Rate: {failure_rate:.1f}%"
+        proof_str = f"Safety(OT={avg_ot:.1f}h, Fail={failure_rate:.1f}%) ⊢ {'SAT' if is_safe else 'UNSAT'}"
+        context_str = f"Simulated MRI: {len(logs)} logs. Proj. Failure Rate: {failure_rate:.1f}%"
 
     else:
-        # E-commerce Z3 Logic
-        total_loss = float(metrics.get('totalLoss', 0))
+        # Scale baseline loss by simulation modifiers
+        total_loss = float(metrics.get('totalLoss', 0)) * anomaly_factor * mitigation_factor
         reasons = [l.get('reason', '') for l in logs]
         primary_driver = max(set(reasons), key=reasons.count) if reasons else "Unknown"
         
         for b in batches:
-            b_loss = sum(item.get('loss', 0) for item in b)
+            b_loss = sum(item.get('loss', 0) for item in b) * anomaly_factor * mitigation_factor
             if b_loss > (total_loss / max(1, len(batches))): 
                 critical_clusters += 1
 
@@ -68,8 +76,8 @@ def analyze_logic(data):
         is_safe = (solver.check() == sat)
         solver.pop()
 
-        proof_str = f"Loss_Invariant(Total={total_loss} < 50k) ⊢ {'SAT' if is_safe else 'UNSAT'}"
-        context_str = f"Deep MRI Analysis: {len(logs)} logs clustered into {len(batches)} batches. Primary Driver: {primary_driver}"
+        proof_str = f"Loss_Invariant(Total={total_loss:.0f} < 50k) ⊢ {'SAT' if is_safe else 'UNSAT'}"
+        context_str = f"Simulated Analysis: Loss Mitigation {modifiers.get('loss_mitigation')}% active. Primary Driver: {primary_driver}"
 
     # =====================================================================
     # THE TRUE AI INTEGRATION (REST API BYPASS)

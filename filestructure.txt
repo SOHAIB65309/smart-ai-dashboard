@@ -1,12 +1,54 @@
+|-- .agents
+    |-- skills
+        |-- deploying-laravel-cloud
+            |-- reference
+                |-- checklists.md
+            |-- SKILL.md
+        |-- inertia-react-development
+            |-- SKILL.md
+        |-- laravel-best-practices
+            |-- rules
+                |-- advanced-queries.md
+                |-- architecture.md
+                |-- blade-views.md
+                |-- caching.md
+                |-- collections.md
+                |-- config.md
+                |-- db-performance.md
+                |-- eloquent.md
+                |-- error-handling.md
+                |-- events-notifications.md
+                |-- http-client.md
+                |-- mail.md
+                |-- migrations.md
+                |-- queue-jobs.md
+                |-- routing.md
+                |-- scheduling.md
+                |-- security.md
+                |-- style.md
+                |-- testing.md
+                |-- validation.md
+            |-- SKILL.md
+        |-- tailwindcss-development
+            |-- SKILL.md
+|-- .ai
+    |-- skills
+        |-- deploying-laravel-cloud
+            |-- reference
+                |-- checklists.md
+            |-- SKILL.md
 |-- .editorconfig
 |-- .env
 |-- .env.example
+|-- .gemini
+    |-- settings.json
 |-- .gitattributes
 |-- .github
     |-- workflows
         |-- lint.yml
         |-- tests.yml
 |-- .gitignore
+|-- .phpunit.result.cache
 |-- .prettierignore
 |-- .prettierrc
 |-- app
@@ -22,7 +64,9 @@
                 |-- RegisteredUserController.php
                 |-- VerifyEmailController.php
             |-- BusinessController.php
+            |-- BusinessDataController.php
             |-- Controller.php
+            |-- DashboardController.php
             |-- Settings
                 |-- PasswordController.php
                 |-- ProfileController.php
@@ -31,8 +75,12 @@
         |-- Requests
             |-- Auth
                 |-- LoginRequest.php
+            |-- BusinessSeedRequest.php
+            |-- IngredientDataRequest.php
+            |-- ProductDataRequest.php
             |-- Settings
                 |-- ProfileUpdateRequest.php
+            |-- StaffDataRequest.php
     |-- Models
         |-- BusinessProfile.php
         |-- DailyPerformanceLog.php
@@ -49,6 +97,7 @@
     |-- Providers
         |-- AppServiceProvider.php
 |-- artisan
+|-- boost.json
 |-- bootstrap
     |-- app.php
     |-- providers.php
@@ -76,9 +125,11 @@
         |-- 0001_01_01_000002_create_jobs_table.php
         |-- 2026_05_02_122911_create_granular_dashboard_tables.php
         |-- 2026_05_02_125110_create_products_table.php
+        |-- 2026_05_30_175906_add_cascading_deletes_to_staff_logs.php
     |-- seeders
         |-- DatabaseSeeder.php
 |-- eslint.config.js
+|-- GEMINI.md
 |-- package-lock.json
 |-- package.json
 |-- phpunit.xml
@@ -89,6 +140,7 @@
     |-- index.php
     |-- logo.svg
     |-- robots.txt
+|-- README.md
 |-- resources
     |-- css
         |-- app.css
@@ -105,6 +157,7 @@
             |-- appearance-dropdown.tsx
             |-- appearance-tabs.tsx
             |-- breadcrumbs.tsx
+            |-- business-analyzer-panel.tsx
             |-- delete-user.tsx
             |-- heading-small.tsx
             |-- heading.tsx
@@ -143,6 +196,7 @@
             |-- user-menu-content.tsx
         |-- hooks
             |-- use-appearance.tsx
+            |-- use-business-simulation.ts
             |-- use-initials.tsx
             |-- use-mobile-navigation.ts
             |-- use-mobile.tsx
@@ -171,6 +225,7 @@
             |-- Business
                 |-- Create.tsx
                 |-- Dashboard.tsx
+                |-- DataEdit.tsx
             |-- dashboard.tsx
             |-- settings
                 |-- appearance.tsx
@@ -229,9 +284,9 @@
             |-- 92c24b7e7784130c6057d471fc051e93.php
             |-- 96939b20faa5df79bb37a26cdaf8fa63.php
             |-- 977ff46b592d08d27eb98c7e13a13357.php
-            |-- 9bb79cae45cf6d99755b21951944e4ce.php
             |-- a2ef0f1c312787d4087957b0bd544d46.php
             |-- a340455b1d7f7c9f05d26c458453b169.php
+            |-- a7dc3faf7a74e98521826baec4eef756.php
             |-- a85850c727437482bc20e1ce6486ea94.php
             |-- ab377ae24144397151e3039a921e65e5.php
             |-- b66574259e2e9c4e25a22a387a66e8d7.php
@@ -256,6 +311,7 @@
             |-- PasswordConfirmationTest.php
             |-- PasswordResetTest.php
             |-- RegistrationTest.php
+        |-- BusinessSeedingTest.php
         |-- DashboardTest.php
         |-- Settings
             |-- PasswordUpdateTest.php
@@ -1525,6 +1581,292 @@
             |-- stubs
                 |-- middleware.stub
     |-- laravel
+        |-- boost
+            |-- .ai
+                |-- boost
+                    |-- core.blade.php
+                |-- deployments
+                    |-- core.blade.php
+                |-- enforce-tests.blade.php
+                |-- fluxui-free
+                    |-- skill
+                        |-- fluxui-development
+                            |-- SKILL.blade.php
+                |-- fluxui-pro
+                    |-- skill
+                        |-- fluxui-development
+                            |-- SKILL.blade.php
+                |-- folio
+                    |-- skill
+                        |-- folio-routing
+                            |-- SKILL.blade.php
+                |-- foundation.blade.php
+                |-- herd
+                    |-- core.blade.php
+                |-- inertia-laravel
+                    |-- core.blade.php
+                |-- inertia-react
+                    |-- 1
+                        |-- skill
+                            |-- inertia-react-development
+                                |-- SKILL.blade.php
+                    |-- 2
+                        |-- skill
+                            |-- inertia-react-development
+                                |-- SKILL.blade.php
+                    |-- core.blade.php
+                |-- inertia-svelte
+                    |-- 1
+                        |-- skill
+                            |-- inertia-svelte-development
+                                |-- SKILL.blade.php
+                    |-- 2
+                        |-- skill
+                            |-- inertia-svelte-development
+                                |-- SKILL.blade.php
+                    |-- core.blade.php
+                |-- inertia-vue
+                    |-- 1
+                        |-- skill
+                            |-- inertia-vue-development
+                                |-- SKILL.blade.php
+                    |-- 2
+                        |-- skill
+                            |-- inertia-vue-development
+                                |-- SKILL.blade.php
+                    |-- core.blade.php
+                |-- laravel
+                    |-- 11
+                        |-- core.blade.php
+                    |-- 12
+                        |-- core.blade.php
+                    |-- core.blade.php
+                    |-- skill
+                        |-- laravel-best-practices
+                            |-- rules
+                                |-- advanced-queries.md
+                                |-- architecture.md
+                                |-- blade-views.md
+                                |-- caching.md
+                                |-- collections.md
+                                |-- config.md
+                                |-- db-performance.md
+                                |-- eloquent.md
+                                |-- error-handling.md
+                                |-- events-notifications.md
+                                |-- http-client.md
+                                |-- mail.md
+                                |-- migrations.md
+                                |-- queue-jobs.md
+                                |-- routing.md
+                                |-- scheduling.md
+                                |-- security.md
+                                |-- style.md
+                                |-- testing.md
+                                |-- validation.md
+                            |-- SKILL.md
+                |-- livewire
+                    |-- 2
+                        |-- skill
+                            |-- livewire-development
+                                |-- SKILL.blade.php
+                    |-- 3
+                        |-- skill
+                            |-- livewire-development
+                                |-- SKILL.blade.php
+                    |-- 4
+                        |-- skill
+                            |-- livewire-development
+                                |-- reference
+                                    |-- javascript-hooks.md
+                                |-- SKILL.blade.php
+                    |-- core.blade.php
+                |-- mcp
+                    |-- skill
+                        |-- mcp-development
+                            |-- SKILL.blade.php
+                |-- pennant
+                    |-- skill
+                        |-- pennant-development
+                            |-- SKILL.md
+                |-- pest
+                    |-- 3
+                        |-- skill
+                            |-- pest-testing
+                                |-- SKILL.blade.php
+                    |-- 4
+                        |-- skill
+                            |-- pest-testing
+                                |-- SKILL.blade.php
+                    |-- core.blade.php
+                |-- php
+                    |-- 8.2
+                        |-- core.blade.php
+                    |-- 8.3
+                        |-- core.blade.php
+                    |-- 8.4
+                        |-- core.blade.php
+                    |-- 8.5
+                        |-- core.blade.php
+                    |-- core.blade.php
+                |-- phpunit
+                    |-- core.blade.php
+                |-- pint
+                    |-- core.blade.php
+                |-- sail
+                    |-- core.blade.php
+                |-- tailwindcss
+                    |-- 3
+                        |-- skill
+                            |-- tailwindcss-development
+                                |-- SKILL.md
+                    |-- 4
+                        |-- skill
+                            |-- tailwindcss-development
+                                |-- SKILL.md
+                |-- volt
+                    |-- core.blade.php
+                    |-- skill
+                        |-- volt-development
+                            |-- SKILL.blade.php
+                |-- wayfinder
+                    |-- core.blade.php
+                    |-- skill
+                        |-- wayfinder-development
+                            |-- SKILL.blade.php
+            |-- composer.json
+            |-- config
+                |-- boost.php
+            |-- LICENSE.md
+            |-- pint.json
+            |-- README.md
+            |-- rector.php
+            |-- src
+                |-- Boost.php
+                |-- BoostManager.php
+                |-- BoostServiceProvider.php
+                |-- Concerns
+                    |-- DisplayHelper.php
+                    |-- MakesHttpRequests.php
+                    |-- ReadsLogs.php
+                    |-- RendersBladeGuidelines.php
+                |-- Console
+                    |-- AddSkillCommand.php
+                    |-- Enums
+                        |-- Theme.php
+                    |-- ExecuteToolCommand.php
+                    |-- InstallCommand.php
+                    |-- ListSkillCommand.php
+                    |-- StartCommand.php
+                    |-- UpdateCommand.php
+                |-- Contracts
+                    |-- SupportsGuidelines.php
+                    |-- SupportsMcp.php
+                    |-- SupportsSkills.php
+                |-- Install
+                    |-- Agents
+                        |-- Agent.php
+                        |-- Amp.php
+                        |-- ClaudeCode.php
+                        |-- Codex.php
+                        |-- Copilot.php
+                        |-- Cursor.php
+                        |-- Gemini.php
+                        |-- Junie.php
+                        |-- Kiro.php
+                        |-- OpenCode.php
+                    |-- AgentsDetector.php
+                    |-- Assists
+                        |-- Inertia.php
+                    |-- Cloud.php
+                    |-- Concerns
+                        |-- DiscoverPackagePaths.php
+                    |-- Contracts
+                        |-- DetectionStrategy.php
+                    |-- Detection
+                        |-- CommandDetectionStrategy.php
+                        |-- CompositeDetectionStrategy.php
+                        |-- DetectionStrategyFactory.php
+                        |-- DirectoryDetectionStrategy.php
+                        |-- FileDetectionStrategy.php
+                    |-- Enums
+                        |-- McpInstallationStrategy.php
+                        |-- Platform.php
+                    |-- GuidelineAssist.php
+                    |-- GuidelineComposer.php
+                    |-- GuidelineConfig.php
+                    |-- GuidelineWriter.php
+                    |-- Herd.php
+                    |-- MarkdownFormatter.php
+                    |-- Mcp
+                        |-- FileWriter.php
+                        |-- TomlFileWriter.php
+                    |-- McpWriter.php
+                    |-- Nightwatch.php
+                    |-- Sail.php
+                    |-- Skill.php
+                    |-- SkillComposer.php
+                    |-- SkillWriter.php
+                    |-- ThirdPartyPackage.php
+                |-- Mcp
+                    |-- Boost.php
+                    |-- Methods
+                        |-- CallToolWithExecutor.php
+                    |-- Prompts
+                        |-- .gitkeep
+                        |-- LaravelCodeSimplifier
+                            |-- laravel-code-simplifier.blade.php
+                            |-- LaravelCodeSimplifier.php
+                        |-- UpgradeInertiav3
+                            |-- upgrade-inertia-v3.blade.php
+                            |-- UpgradeInertiaV3.php
+                        |-- UpgradeLaravelv13
+                            |-- upgrade-laravel-v13.blade.php
+                            |-- UpgradeLaravelV13.php
+                        |-- UpgradeLivewirev4
+                            |-- upgrade-livewire-v4.blade.php
+                            |-- UpgradeLivewireV4.php
+                    |-- Resources
+                        |-- ApplicationInfo.php
+                    |-- ToolExecutor.php
+                    |-- ToolRegistry.php
+                    |-- Tools
+                        |-- ApplicationInfo.php
+                        |-- BrowserLogs.php
+                        |-- DatabaseConnections.php
+                        |-- DatabaseQuery.php
+                        |-- DatabaseSchema
+                            |-- DatabaseSchemaDriver.php
+                            |-- MySQLSchemaDriver.php
+                            |-- NullSchemaDriver.php
+                            |-- PostgreSQLSchemaDriver.php
+                            |-- SchemaDriverFactory.php
+                            |-- SQLiteSchemaDriver.php
+                        |-- DatabaseSchema.php
+                        |-- GetAbsoluteUrl.php
+                        |-- LastError.php
+                        |-- ReadLogEntries.php
+                        |-- SearchDocs.php
+                        |-- Tinker.php
+                |-- Middleware
+                    |-- InjectBoost.php
+                |-- Services
+                    |-- BrowserLogger.php
+                |-- Skills
+                    |-- Remote
+                        |-- AuditResult.php
+                        |-- GitHubRepository.php
+                        |-- GitHubSkillProvider.php
+                        |-- RemoteSkill.php
+                        |-- Risk.php
+                        |-- SkillAuditor.php
+                |-- Support
+                    |-- CommandNormalizer.php
+                    |-- Composer.php
+                    |-- Config.php
+                    |-- Npm.php
+            |-- workbench
+                |-- storage
         |-- framework
             |-- composer.json
             |-- config
@@ -3506,6 +3848,170 @@
                         |-- ViewFinderInterface.php
                         |-- ViewName.php
                         |-- ViewServiceProvider.php
+        |-- mcp
+            |-- composer.json
+            |-- config
+                |-- mcp.php
+            |-- LICENSE.md
+            |-- pint.json
+            |-- README.md
+            |-- rector.php
+            |-- resources
+                |-- boost
+                    |-- skills
+                        |-- mcp-development
+                            |-- references
+                                |-- app.md
+                            |-- SKILL.blade.php
+                |-- js
+                    |-- mcp-sdk.js
+                    |-- mcp-sdk.min.js
+                |-- views
+                    |-- mcp
+                        |-- authorize.blade.php
+                        |-- components
+                            |-- app.blade.php
+            |-- routes
+                |-- ai.php
+            |-- src
+                |-- Console
+                    |-- Commands
+                        |-- InspectorCommand.php
+                        |-- MakeAppResourceCommand.php
+                        |-- MakePromptCommand.php
+                        |-- MakeResourceCommand.php
+                        |-- MakeServerCommand.php
+                        |-- MakeToolCommand.php
+                        |-- StartCommand.php
+                |-- Enums
+                    |-- Role.php
+                |-- Events
+                    |-- SessionInitialized.php
+                |-- Exceptions
+                    |-- NotImplementedException.php
+                |-- Facades
+                    |-- Mcp.php
+                |-- Request.php
+                |-- Response.php
+                |-- ResponseFactory.php
+                |-- Server
+                    |-- Annotations
+                        |-- Annotation.php
+                        |-- Audience.php
+                        |-- LastModified.php
+                        |-- Priority.php
+                    |-- AppResource.php
+                    |-- Attributes
+                        |-- AppMeta.php
+                        |-- Description.php
+                        |-- Instructions.php
+                        |-- MimeType.php
+                        |-- Name.php
+                        |-- RendersApp.php
+                        |-- ServerAttribute.php
+                        |-- Title.php
+                        |-- Uri.php
+                        |-- Version.php
+                    |-- Completions
+                        |-- ArrayCompletionResponse.php
+                        |-- CompletionHelper.php
+                        |-- CompletionResponse.php
+                        |-- DirectCompletionResponse.php
+                        |-- EnumCompletionResponse.php
+                    |-- Concerns
+                        |-- HasAnnotations.php
+                        |-- HasMeta.php
+                        |-- HasStructuredContent.php
+                        |-- ReadsAttributes.php
+                    |-- Content
+                        |-- Audio.php
+                        |-- Blob.php
+                        |-- Image.php
+                        |-- Notification.php
+                        |-- Text.php
+                    |-- Contracts
+                        |-- Annotation.php
+                        |-- Completable.php
+                        |-- Content.php
+                        |-- Errable.php
+                        |-- HasUriTemplate.php
+                        |-- Method.php
+                        |-- Transport.php
+                    |-- Exceptions
+                        |-- JsonRpcException.php
+                    |-- Http
+                        |-- Controllers
+                            |-- OAuthRegisterController.php
+                    |-- McpServiceProvider.php
+                    |-- Methods
+                        |-- CallTool.php
+                        |-- CompletionComplete.php
+                        |-- Concerns
+                            |-- InteractsWithResponses.php
+                            |-- ResolvesPrompts.php
+                            |-- ResolvesResources.php
+                        |-- GetPrompt.php
+                        |-- Initialize.php
+                        |-- ListPrompts.php
+                        |-- ListResources.php
+                        |-- ListResourceTemplates.php
+                        |-- ListTools.php
+                        |-- Ping.php
+                        |-- ReadResource.php
+                    |-- Middleware
+                        |-- AddWwwAuthenticateHeader.php
+                        |-- ReorderJsonAccept.php
+                    |-- Pagination
+                        |-- CursorPaginator.php
+                    |-- Primitive.php
+                    |-- Prompt.php
+                    |-- Prompts
+                        |-- Argument.php
+                    |-- Registrar.php
+                    |-- Resource.php
+                    |-- ServerContext.php
+                    |-- Testing
+                        |-- PendingTestResponse.php
+                        |-- TestResponse.php
+                    |-- Tool.php
+                    |-- Tools
+                        |-- Annotations
+                            |-- IsDestructive.php
+                            |-- IsIdempotent.php
+                            |-- IsOpenWorld.php
+                            |-- IsReadOnly.php
+                            |-- ToolAnnotation.php
+                    |-- Transport
+                        |-- FakeTransporter.php
+                        |-- HttpTransport.php
+                        |-- JsonRpcNotification.php
+                        |-- JsonRpcRequest.php
+                        |-- JsonRpcResponse.php
+                        |-- StdioTransport.php
+                    |-- Ui
+                        |-- AppMeta.php
+                        |-- Csp.php
+                        |-- Enums
+                            |-- Library.php
+                            |-- Permission.php
+                            |-- Visibility.php
+                        |-- Permissions.php
+                |-- Server.php
+                |-- Support
+                    |-- UriTemplate.php
+                    |-- ValidationMessages.php
+            |-- stubs
+                |-- mcp-app-resource.stub
+                |-- mcp-app-resource.view.stub
+                |-- mcp-prompt.stub
+                |-- mcp-resource.stub
+                |-- mcp-server.stub
+                |-- mcp-tool.stub
+            |-- testbench.yaml
+            |-- workbench
+                |-- app
+                    |-- Providers
+                        |-- WorkbenchServiceProvider.php
         |-- pail
             |-- composer.json
             |-- LICENSE.md
@@ -3632,6 +4138,33 @@
                         |-- TextPromptRenderer.php
                         |-- TitleRenderer.php
                 |-- Title.php
+        |-- roster
+            |-- composer.json
+            |-- LICENSE.md
+            |-- README.md
+            |-- src
+                |-- Approach.php
+                |-- Console
+                    |-- ScanCommand.php
+                |-- Enums
+                    |-- Approaches.php
+                    |-- Ides.php
+                    |-- NodePackageManager.php
+                    |-- Packages.php
+                    |-- PackageSource.php
+                |-- Package.php
+                |-- PackageCollection.php
+                |-- Roster.php
+                |-- RosterServiceProvider.php
+                |-- Scanners
+                    |-- BasePackageScanner.php
+                    |-- BunPackageLock.php
+                    |-- Composer.php
+                    |-- DirectoryStructure.php
+                    |-- NpmPackageLock.php
+                    |-- PackageLock.php
+                    |-- PnpmPackageLock.php
+                    |-- YarnPackageLock.php
         |-- sail
             |-- bin
                 |-- sail

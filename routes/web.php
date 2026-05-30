@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\BusinessController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\BusinessDataController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -9,9 +11,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/business/create', [BusinessController::class, 'create'])->name('business.create');
     
     // POST: Store the new business in the database
@@ -25,6 +25,18 @@ Route::middleware(['auth'])->group(function () {
 
         // GET: Show form to edit existing business/domain data
         Route::get('/edit', [BusinessController::class, 'edit'])->name('business.edit');
+        
+        // --- Data Management Routes ---
+        Route::get('/manage', [BusinessDataController::class, 'edit'])->name('business.manage');
+        
+        Route::put('/staff/{staff}', [BusinessDataController::class, 'updateStaff'])->name('business.staff.update');
+        Route::delete('/staff/{staff}', [BusinessDataController::class, 'destroyStaff'])->name('business.staff.destroy');
+        
+        Route::put('/ingredients/{ingredient}', [BusinessDataController::class, 'updateIngredient'])->name('business.ingredients.update');
+        Route::delete('/ingredients/{ingredient}', [BusinessDataController::class, 'destroyIngredient'])->name('business.ingredients.destroy');
+        
+        Route::put('/products/{product}', [BusinessDataController::class, 'updateProduct'])->name('business.products.update');
+        Route::delete('/products/{product}', [BusinessDataController::class, 'destroyProduct'])->name('business.products.destroy');
 
         // PUT: Update the specific business data/metrics
         Route::put('/', [BusinessController::class, 'update'])->name('business.update');
