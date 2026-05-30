@@ -126,6 +126,8 @@
         |-- 2026_05_02_122911_create_granular_dashboard_tables.php
         |-- 2026_05_02_125110_create_products_table.php
         |-- 2026_05_30_175906_add_cascading_deletes_to_staff_logs.php
+        |-- 2026_05_30_183615_add_cascading_deletes_to_products.php
+        |-- 2026_05_30_183803_ensure_all_cascading_deletes.php
     |-- seeders
         |-- DatabaseSeeder.php
 |-- eslint.config.js

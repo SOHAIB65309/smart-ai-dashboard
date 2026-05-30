@@ -32,7 +32,7 @@ export default function Dashboard({ stats, recentBusinesses, industryDistributio
                         <LayoutDashboard className="size-5 text-indigo-600 dark:text-indigo-400" />
                     </div>
                     <div>
-                        <h1 className="font-bold text-lg leading-none text-neutral-900 dark:text-neutral-100">Smart Dashboard</h1>
+                        <h1 className="font-bold text-lg leading-none text-neutral-900 dark:text-neutral-100">IndusStream AI Dashboards</h1>
                         <p className="text-xs text-neutral-500 font-medium mt-1 uppercase tracking-widest">Global Overview / Analytics</p>
                     </div>
                 </div>

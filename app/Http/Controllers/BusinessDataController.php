@@ -61,6 +61,14 @@ class BusinessDataController extends Controller
     {
         Gate::authorize('update', $business);
         
+        // Software-level Cascade (Fail-safe for DB Constraint issues)
+        $staff->performanceLogs()->delete();
+        $staff->wasteLogs()->delete();
+        
+        // Orders referencing this staff member are set to null or deleted
+        // Depending on business logic, here we delete them to satisfy the hard constraint reported
+        \App\Models\Order::where('staff_id', $staff->id)->delete();
+
         $staff->delete();
         return back()->with('message', 'Staff member and related data removed.');
     }
@@ -89,6 +97,15 @@ class BusinessDataController extends Controller
     public function destroyIngredient(BusinessProfile $business, Ingredient $ingredient)
     {
         Gate::authorize('update', $business);
+        
+        // Software-level Cascade
+        $ingredient->wasteLogs()->delete();
+        
+        // Handle RecipeRequirement if the table exists
+        if (\Illuminate\Support\Facades\Schema::hasTable('recipe_requirements')) {
+             $ingredient->recipeRequirements()->delete();
+        }
+
         $ingredient->delete();
         return back()->with('message', 'Ingredient removed.');
     }
@@ -116,6 +133,16 @@ class BusinessDataController extends Controller
     public function destroyProduct(BusinessProfile $business, Products $product)
     {
         Gate::authorize('update', $business);
+        
+        // Software-level Cascade
+        $product->wasteLogs()->delete();
+        \App\Models\Order::where('product_id', $product->id)->delete();
+        
+        // Handle RecipeRequirement if the table exists
+        if (\Illuminate\Support\Facades\Schema::hasTable('recipe_requirements')) {
+             $product->recipeRequirements()->delete();
+        }
+
         $product->delete();
         return back()->with('message', 'Product removed.');
     }
